@@ -42,7 +42,9 @@ switch:
   - platform: gpio
     id: relay_pump
     name: "Relais Pompe"
-    pin: ${relay_pin}
+    pin:
+      number: ${relay_pin}
+      inverted: ${relay_inverted}
     restore_mode: RESTORE_DEFAULT_OFF
 
 binary_sensor:

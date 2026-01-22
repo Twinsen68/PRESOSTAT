@@ -4,6 +4,7 @@ substitutions:
   board: esp32-s3-devkitc-1
   pressure_adc_pin: GPIO1
   relay_pin: GPIO6
+  relay_inverted: "true"
   button_pin: GPIO7
   i2c_sda_pin: GPIO8
   i2c_scl_pin: GPIO9
