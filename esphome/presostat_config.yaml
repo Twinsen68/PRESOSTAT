@@ -1,0 +1,5 @@
+packages:
+  device_base: !include common/device_base.yaml
+  presostat: !include common/presostat.yaml
+  debug: !include common/debug.yaml
+  pompe1: !include common/pompe1.yaml
