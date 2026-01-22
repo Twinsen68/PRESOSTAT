@@ -22,4 +22,3 @@ packages:
     url: https://github.com/Twinsen68/presostat.git
     file: esphome/presostat_config.yaml
     ref: main
-  local: !include presostat_config.yaml
