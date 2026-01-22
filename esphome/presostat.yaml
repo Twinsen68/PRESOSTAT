@@ -20,6 +20,6 @@ substitutions:
 packages:
   twinsen68.presostat:
     url: https://github.com/Twinsen68/presostat.git
-    file: presostat_config.yaml
+    file: esphome/presostat_config.yaml
     ref: main
   local: !include presostat_config.yaml
