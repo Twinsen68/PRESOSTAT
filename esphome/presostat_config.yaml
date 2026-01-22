@@ -1,0 +1,139 @@
+# Configuration autonome (sans dossier common/ requis).
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+esp32:
+  board: ${board}
+  framework:
+    type: arduino
+
+logger:
+
+api:
+
+ota:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "${friendly_name} Fallback"
+    password: !secret wifi_ap_password
+
+captive_portal:
+
+web_server:
+  port: 80
+
+i2c:
+  sda: ${i2c_sda_pin}
+  scl: ${i2c_scl_pin}
+  scan: true
+
+font:
+  - file: "gfonts://Roboto"
+    id: roboto_18
+    size: 18
+  - file: "gfonts://Roboto"
+    id: roboto_14
+    size: 14
+
+switch:
+  - platform: gpio
+    id: relay_pump
+    name: "Relais Pompe"
+    pin:
+      number: ${relay_pin}
+      inverted: ${relay_inverted}
+    restore_mode: RESTORE_DEFAULT_OFF
+
+binary_sensor:
+  - platform: gpio
+    id: pump_button
+    name: "Bouton Pompe"
+    pin:
+      number: ${button_pin}
+      mode:
+        input: true
+        pullup: true
+      inverted: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    on_press:
+      - switch.toggle: relay_pump
+
+  - platform: template
+    id: low_pressure_fault
+    name: "Pression Basse Persistante"
+    device_class: problem
+    lambda: |-
+      if (isnan(id(pressure_bar).state)) {
+        return false;
+      }
+      return id(pressure_bar).state < ${pressure_fault_min};
+    filters:
+      - delayed_on: 5min
+    on_press:
+      - switch.turn_off: relay_pump
+
+sensor:
+  - platform: adc
+    id: pressure_voltage
+    pin: ${pressure_adc_pin}
+    name: "Tension Capteur Pression"
+    attenuation: 11db
+    update_interval: 1s
+    unit_of_measurement: "V"
+    accuracy_decimals: 2
+
+  - platform: template
+    id: pressure_bar
+    name: "Pression"
+    unit_of_measurement: "bar"
+    accuracy_decimals: 2
+    update_interval: 1s
+    lambda: |-
+      const float v_min = ${pressure_voltage_min};
+      const float v_max = ${pressure_voltage_max};
+      const float p_min = ${pressure_bar_min};
+      const float p_max = ${pressure_bar_max};
+      if (isnan(id(pressure_voltage).state)) {
+        return NAN;
+      }
+      float voltage = id(pressure_voltage).state;
+      float pressure = (voltage - v_min) * (p_max - p_min) / (v_max - v_min) + p_min;
+      if (pressure < p_min) {
+        pressure = p_min;
+      }
+      if (pressure > p_max) {
+        pressure = p_max;
+      }
+      return pressure;
+    on_value:
+      then:
+        - if:
+            condition:
+              lambda: |-
+                return !isnan(x) && x < ${pressure_hold_min};
+            then:
+              - switch.turn_on: relay_pump
+        - if:
+            condition:
+              lambda: |-
+                return !isnan(x) && x >= ${pressure_hold_max};
+            then:
+              - switch.turn_off: relay_pump
+
+display:
+  - platform: ssd1306_i2c
+    model: "SSD1306 128x64"
+    address: 0x3C
+    lambda: |-
+      it.printf(0, 0, id(roboto_18), "Pompe: %s",
+        id(relay_pump).state ? "ON" : "OFF");
+      it.printf(0, 26, id(roboto_14), "Pression: %.2f bar",
+        isnan(id(pressure_bar).state) ? 0.0f : id(pressure_bar).state);
+      it.printf(0, 46, id(roboto_14), "Defaut: %s",
+        id(low_pressure_fault).state ? "OUI" : "NON");
