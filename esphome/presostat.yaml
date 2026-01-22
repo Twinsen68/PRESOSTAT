@@ -1,26 +1,25 @@
 substitutions:
   device_name: presostat
   friendly_name: "Presostat"
-  pressure_pin: GPIO4
+  board: esp32-s3-devkitc-1
+  pressure_adc_pin: GPIO1
+  relay_pin: GPIO6
+  relay_inverted: "true"
+  button_pin: GPIO7
+  i2c_sda_pin: GPIO8
+  i2c_scl_pin: GPIO9
+  pressure_voltage_min: "0.5"
+  pressure_voltage_max: "4.5"
+  pressure_bar_min: "0.0"
+  pressure_bar_max: "10.0"
+  pressure_hold_min: "3.5"
+  pressure_hold_max: "6.0"
+  pressure_fault_min: "1.5"
 
 # Inclusion d'une configuration externe pour modularité et réutilisation.
 packages:
-  twinsen68.pompe_doseuses_esphome:
-    url: https://github.com/Twinsen68/pompe_doseuses_esphome.git
-    file: pompedoseuses_config.yaml
+  twinsen68.presostat:
+    url: https://github.com/Twinsen68/presostat.git
+    file: presostat_config.yaml
     ref: main
   local: !include presostat_config.yaml
-
-binary_sensor:
-  - platform: gpio
-    id: pressure_switch
-    name: "Contact Presostat"
-    pin:
-      number: ${pressure_pin}
-      mode:
-        input: true
-        pullup: true
-    filters:
-      - delayed_on: 50ms
-      - delayed_off: 50ms
-    device_class: power
