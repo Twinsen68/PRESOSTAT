@@ -1,0 +1,26 @@
+substitutions:
+  device_name: presostat
+  friendly_name: "Presostat"
+  pressure_pin: GPIO4
+
+# Inclusion d'une configuration externe pour modularité et réutilisation.
+packages:
+  twinsen68.pompe_doseuses_esphome:
+    url: https://github.com/Twinsen68/pompe_doseuses_esphome.git
+    file: pompedoseuses_config.yaml
+    ref: main
+  local: !include presostat_config.yaml
+
+binary_sensor:
+  - platform: gpio
+    id: pressure_switch
+    name: "Contact Presostat"
+    pin:
+      number: ${pressure_pin}
+      mode:
+        input: true
+        pullup: true
+    filters:
+      - delayed_on: 50ms
+      - delayed_off: 50ms
+    device_class: power
