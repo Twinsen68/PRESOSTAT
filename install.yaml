@@ -15,6 +15,7 @@ substitutions:
   pressure_hold_min: "3.5"
   pressure_hold_max: "6.0"
   pressure_fault_min: "1.5"
+  wifi_ap_password: "presostat-fallback"
 
 # Inclusion d'une configuration externe pour modularité et réutilisation.
 packages:
