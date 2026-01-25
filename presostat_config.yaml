@@ -101,8 +101,8 @@ script:
 
           const float pressure = id(pressure_bar).state;
           const bool pressure_valid = !isnan(pressure);
-          const float p_min = ${pressure_hold_min};
-          const float p_max = ${pressure_hold_max};
+          const float p_min = id(pressure_hold_min_value).state;
+          const float p_max = id(pressure_hold_max_value).state;
 
           if (id(calibration_active)) {
             const float phase = (now % 2000) / 2000.0f;
@@ -210,6 +210,28 @@ text_sensor:
       return {"Termine"};
 
 number:
+  - platform: template
+    name: "Seuil Pression Min"
+    id: hold_min_number
+    min_value: 0.0
+    max_value: 16.0
+    step: 0.1
+    optimistic: true
+    restore_value: true
+    initial_value: ${pressure_hold_min}
+    on_value:
+      - script.execute: update_status_led
+  - platform: template
+    name: "Seuil Pression Max"
+    id: hold_max_number
+    min_value: 0.0
+    max_value: 16.0
+    step: 0.1
+    optimistic: true
+    restore_value: true
+    initial_value: ${pressure_hold_max}
+    on_value:
+      - script.execute: update_status_led
   - platform: template
     name: "Calibration 1 bar (V)"
     id: cal_number_1_bar
@@ -330,6 +352,38 @@ binary_sensor:
       - script.execute: update_status_led
 
 sensor:
+  - platform: homeassistant
+    id: hold_min_sensor
+    entity_id: ${pressure_hold_min_sensor}
+    internal: true
+    on_value:
+      - script.execute: update_status_led
+  - platform: homeassistant
+    id: hold_max_sensor
+    entity_id: ${pressure_hold_max_sensor}
+    internal: true
+    on_value:
+      - script.execute: update_status_led
+
+  - platform: template
+    id: pressure_hold_min_value
+    internal: true
+    update_interval: 1s
+    lambda: |-
+      if (!isnan(id(hold_min_sensor).state)) {
+        return id(hold_min_sensor).state;
+      }
+      return id(hold_min_number).state;
+  - platform: template
+    id: pressure_hold_max_value
+    internal: true
+    update_interval: 1s
+    lambda: |-
+      if (!isnan(id(hold_max_sensor).state)) {
+        return id(hold_max_sensor).state;
+      }
+      return id(hold_max_number).state;
+
   - platform: wifi_signal
     id: wifi_signal_db
     name: "WiFi Signal"
@@ -423,13 +477,13 @@ sensor:
         - if:
             condition:
               lambda: |-
-                return !isnan(x) && x < ${pressure_hold_min};
+                return !isnan(x) && x < id(pressure_hold_min_value).state;
             then:
               - switch.turn_on: relay_pump
         - if:
             condition:
               lambda: |-
-                return !isnan(x) && x >= ${pressure_hold_max};
+                return !isnan(x) && x >= id(pressure_hold_max_value).state;
             then:
               - switch.turn_off: relay_pump
 

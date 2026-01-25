@@ -63,6 +63,7 @@ les confusions sur les boards S3 N16R8.
 - Seuils d'hystérésis :
   - `pressure_hold_min` (marche pompe)
   - `pressure_hold_max` (arrêt pompe)
+  - `pressure_hold_min_sensor` / `pressure_hold_max_sensor` (entités Home Assistant optionnelles)
 - Sécurité : `pressure_fault_min` (défaut si pression trop basse pendant 5 min).
 
 ### 3) Calibration du capteur
@@ -100,6 +101,18 @@ Si aucune calibration n'est renseignée, la conversion reste basée sur
 ```bash
 esphome logs install.yaml --device /dev/tty.usbserial-XXXX
 ```
+
+## Ajuster la plage min/max via number ou sensor
+
+Deux méthodes sont disponibles pour définir les seuils d'hystérésis :
+
+1. **Via les entités number** :
+   - `Seuil Pression Min`
+   - `Seuil Pression Max`
+   Ces valeurs sont persistantes (restore_value) et utilisées par défaut.
+2. **Via des entités sensor Home Assistant** :
+   - Renseignez `pressure_hold_min_sensor` et `pressure_hold_max_sensor` dans `install.yaml`.
+   - Si les capteurs renvoient une valeur valide, ils prennent le dessus sur les numbers.
 
 ## Remarques
 
