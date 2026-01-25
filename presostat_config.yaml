@@ -416,6 +416,7 @@ light:
     pin: ${led_pin}
     num_leds: 1
     rgb_order: ${led_rgb_order}
+    chipset: ${led_chipset}
     restore_mode: ALWAYS_OFF
 
 interval:
