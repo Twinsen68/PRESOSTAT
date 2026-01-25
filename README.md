@@ -42,6 +42,14 @@ Dans `install.yaml`, adaptez si besoin :
 
 - `board` (ex: `esp32-s3-devkitc-1`).
 - Pins : `pressure_adc_pin`, `relay_pin`, `button_pin`, `i2c_sda_pin`, `i2c_scl_pin`.
+- LED : `led_pin` (LED RGB intégrée, type WS2812 ou équivalent).
+- Couleur LED :
+  - `led_fault_red` / `led_fault_green` / `led_fault_blue` (couleur en défaut).
+  - `led_out_red` / `led_out_green` / `led_out_blue` (couleur pression hors consigne).
+  - `led_in_green_min` / `led_in_green_max` (intensité verte en consigne, valeurs 0.0 à 1.0).
+  - `led_calibration_red` / `led_calibration_green` / `led_calibration_blue` (couleur pendant la calibration/valeur invalide).
+  - `led_off_red` / `led_off_green` / `led_off_blue` (couleur quand la pompe est OFF).
+  - `led_rgb_order` (ordre des couleurs, ex: `GRB`).
 - Wi-Fi : `wifi_ap_password` (mot de passe du point d'accès de secours).
 - Plages de calibration :
   - `pressure_voltage_min` / `pressure_voltage_max`
@@ -71,3 +79,4 @@ mesure fiable.
 - Le relais est configuré avec `restore_mode: RESTORE_DEFAULT_OFF`.
 - Le défaut de pression basse coupe la pompe automatiquement.
 - L'écran OLED affiche l'état de la pompe, la pression et le défaut.
+- La LED intégrée est configurable en RGB : rouge hors consigne, dégradé vert en consigne, bleu pendant la calibration, et couleur de défaut dédiée.

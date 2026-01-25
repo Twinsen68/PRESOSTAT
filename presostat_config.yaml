@@ -2,6 +2,9 @@
 esphome:
   name: ${device_name}
   friendly_name: ${friendly_name}
+  on_boot:
+    then:
+      - script.execute: update_status_led
 
 esp32:
   board: ${board}
@@ -47,6 +50,10 @@ switch:
       number: ${relay_pin}
       inverted: ${relay_inverted}
     restore_mode: RESTORE_DEFAULT_OFF
+    on_turn_on:
+      - script.execute: update_status_led
+    on_turn_off:
+      - script.execute: update_status_led
 
 binary_sensor:
   - platform: gpio
@@ -77,6 +84,7 @@ binary_sensor:
       - delayed_on: 5min
     on_press:
       - switch.turn_off: relay_pump
+      - script.execute: update_status_led
 
 sensor:
   - platform: adc
@@ -113,6 +121,7 @@ sensor:
       return pressure;
     on_value:
       then:
+        - script.execute: update_status_led
         - if:
             condition:
               lambda: |-
@@ -125,6 +134,77 @@ sensor:
                 return !isnan(x) && x >= ${pressure_hold_max};
             then:
               - switch.turn_off: relay_pump
+
+light:
+  - platform: esp32_rmt_led_strip
+    id: status_led
+    name: "LED Statut"
+    pin: ${led_pin}
+    num_leds: 1
+    rgb_order: ${led_rgb_order}
+    rmt_channel: 0
+    restore_mode: ALWAYS_OFF
+
+script:
+  - id: update_status_led
+    mode: restart
+    then:
+      - if:
+          condition:
+            binary_sensor.is_on: low_pressure_fault
+          then:
+            - light.turn_on:
+                id: status_led
+                red: ${led_fault_red}
+                green: ${led_fault_green}
+                blue: ${led_fault_blue}
+          else:
+            - if:
+                condition:
+                  switch.is_on: relay_pump
+                then:
+                  - if:
+                      condition:
+                        lambda: |-
+                          return isnan(id(pressure_bar).state);
+                      then:
+                        - light.turn_on:
+                            id: status_led
+                            red: ${led_calibration_red}
+                            green: ${led_calibration_green}
+                            blue: ${led_calibration_blue}
+                      else:
+                        - if:
+                            condition:
+                              lambda: |-
+                                return id(pressure_bar).state < ${pressure_hold_min}
+                                  || id(pressure_bar).state >= ${pressure_hold_max};
+                            then:
+                              - light.turn_on:
+                                  id: status_led
+                                  red: ${led_out_red}
+                                  green: ${led_out_green}
+                                  blue: ${led_out_blue}
+                            else:
+                              - light.turn_on:
+                                  id: status_led
+                                  red: 0.0
+                                  green: !lambda |-
+                                    float p = id(pressure_bar).state;
+                                    float min_p = ${pressure_hold_min};
+                                    float max_p = ${pressure_hold_max};
+                                    float ratio = (p - min_p) / (max_p - min_p);
+                                    if (ratio < 0.0f) ratio = 0.0f;
+                                    if (ratio > 1.0f) ratio = 1.0f;
+                                    return ${led_in_green_min}
+                                      + ratio * (${led_in_green_max} - ${led_in_green_min});
+                                  blue: 0.0
+                else:
+                  - light.turn_on:
+                      id: status_led
+                      red: ${led_off_red}
+                      green: ${led_off_green}
+                      blue: ${led_off_blue}
 
 display:
   - platform: ssd1306_i2c
