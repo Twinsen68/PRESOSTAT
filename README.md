@@ -52,6 +52,10 @@ Dans `install.yaml`, adaptez si besoin :
   - `led_invalid_red` / `led_invalid_green` / `led_invalid_blue` (couleur quand la valeur du capteur est invalide).
   - `led_off_red` / `led_off_green` / `led_off_blue` (couleur quand la pompe est OFF).
   - `led_rgb_order` (ordre des couleurs, ex: `GRB`).
+
+Sur les modules ESP32‑S3 N16R8 (ex : DevKitC‑1), la LED RGB intégrée est
+généralement une WS2812 câblée sur GPIO48 avec un ordre GRB. Cela aide à éviter
+les confusions sur les boards S3 N16R8.
 - Wi-Fi : `wifi_ap_password` (mot de passe du point d'accès de secours).
 - Plages de calibration :
   - `pressure_voltage_min` / `pressure_voltage_max`
