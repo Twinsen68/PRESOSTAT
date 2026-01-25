@@ -552,6 +552,14 @@ display:
     model: "SSD1306 128x64"
     address: 0x3C
     lambda: |-
+      if (id(calibration_active)) {
+        it.printf(0, 0, id(roboto_18), "Calibration");
+        it.printf(0, 18, id(roboto_14), "Palier: %d bar", id(calibration_step));
+        it.printf(0, 34, id(roboto_14), "Tension: %.2f V",
+          isnan(id(pressure_voltage).state) ? 0.0f : id(pressure_voltage).state);
+        it.printf(0, 50, id(roboto_14), "Appuyer bouton");
+        return;
+      }
       it.printf(0, 0, id(roboto_14), "Pompe:%s Def:%s",
         id(relay_pump).state ? "ON" : "OFF",
         id(low_pressure_fault).state ? "OUI" : "NON");
