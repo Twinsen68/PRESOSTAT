@@ -314,6 +314,9 @@ font:
     id: roboto_12
     size: 12
   - file: "gfonts://Roboto"
+    id: roboto_10
+    size: 10
+  - file: "gfonts://Roboto"
     id: roboto_14
     size: 14
 
@@ -570,8 +573,8 @@ display:
         isnan(id(pressure_bar).state) ? 0.0f : id(pressure_bar).state);
       it.printf(0, 26, id(roboto_14), "Pompe: %s",
         id(relay_pump).state ? "ON" : "OFF");
-      it.printf(0, 40, id(roboto_12), "Defaut: %s",
+      it.printf(0, 40, id(roboto_10), "Defaut: %s",
         id(low_pressure_fault).state ? "OUI" : "NON");
-      it.printf(0, 54, id(roboto_12), "WiFi %.0f%%  %.1f C",
+      it.printf(0, 54, id(roboto_10), "WiFi %.0f%%  %.1f C",
         isnan(id(wifi_signal_percent).state) ? 0.0f : id(wifi_signal_percent).state,
         isnan(id(esp_temperature).state) ? 0.0f : id(esp_temperature).state);
