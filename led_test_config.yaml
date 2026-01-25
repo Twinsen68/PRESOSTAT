@@ -41,25 +41,25 @@ captive_portal:
 # -----------------------------------------------------------
 # Option A : LED simple (GPIO, active HIGH ou LOW).
 # -----------------------------------------------------------
-output:
-  - platform: gpio
-    pin: ${led_gpio}
-    inverted: ${led_inverted}
-    id: led_pin
+# output:
+#   - platform: gpio
+#     pin: ${led_gpio}
+#     inverted: ${led_inverted}
+#     id: led_pin
 
-light:
-  - platform: binary
-    name: "LED test"
-    output: led_pin
+# light:
+#   - platform: binary
+#     name: "LED test"
+#     output: led_pin
 
 # -----------------------------------------------------------
 # Option B : LED RGB WS2812 (désactive l'option A si utilisée).
 # -----------------------------------------------------------
-# light:
-#   - platform: esp32_rmt_led_strip
-#     name: "RGB onboard"
-#     pin: ${led_gpio}
-#     num_leds: 1
-#     rgb_order: GRB
-#     chipset: WS2812
-#     restore_mode: ALWAYS_ON
+light:
+  - platform: esp32_rmt_led_strip
+    name: "RGB onboard"
+    pin: ${led_gpio}
+    num_leds: 1
+    rgb_order: GRB
+    chipset: WS2812
+    restore_mode: ALWAYS_ON
