@@ -308,6 +308,9 @@ font:
     id: roboto_18
     size: 18
   - file: "gfonts://Roboto"
+    id: roboto_24
+    size: 24
+  - file: "gfonts://Roboto"
     id: roboto_14
     size: 14
 
@@ -560,12 +563,12 @@ display:
         it.printf(0, 50, id(roboto_14), "Appuyer bouton");
         return;
       }
-      it.printf(0, 0, id(roboto_14), "Pompe:%s Def:%s",
-        id(relay_pump).state ? "ON" : "OFF",
-        id(low_pressure_fault).state ? "OUI" : "NON");
-      it.printf(0, 16, id(roboto_14), "Pression: %.2f bar",
+      it.printf(0, 0, id(roboto_24), "%.2f bar",
         isnan(id(pressure_bar).state) ? 0.0f : id(pressure_bar).state);
-      it.printf(0, 32, id(roboto_14), "WiFi: %.0f%%",
-        isnan(id(wifi_signal_percent).state) ? 0.0f : id(wifi_signal_percent).state);
-      it.printf(0, 48, id(roboto_14), "Temp: %.1f C",
+      it.printf(0, 26, id(roboto_14), "Pompe: %s",
+        id(relay_pump).state ? "ON" : "OFF");
+      it.printf(0, 40, id(roboto_14), "Defaut: %s",
+        id(low_pressure_fault).state ? "OUI" : "NON");
+      it.printf(0, 54, id(roboto_14), "WiFi %.0f%%  %.1f C",
+        isnan(id(wifi_signal_percent).state) ? 0.0f : id(wifi_signal_percent).state,
         isnan(id(esp_temperature).state) ? 0.0f : id(esp_temperature).state);
