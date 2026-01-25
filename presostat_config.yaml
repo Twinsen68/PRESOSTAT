@@ -416,6 +416,25 @@ sensor:
     update_interval: 30s
     unit_of_measurement: "dBm"
     accuracy_decimals: 0
+  - platform: wifi_signal
+    id: wifi_signal_percent
+    name: "WiFi Signal Percent"
+    update_interval: 30s
+    unit_of_measurement: "%"
+    accuracy_decimals: 0
+    filters:
+      - lambda: |-
+          if (isnan(x)) {
+            return NAN;
+          }
+          const float percent = 2.0f * (x + 100.0f);
+          if (percent < 0.0f) {
+            return 0.0f;
+          }
+          if (percent > 100.0f) {
+            return 100.0f;
+          }
+          return percent;
 
   - platform: internal_temperature
     id: esp_temperature
@@ -538,7 +557,7 @@ display:
         id(low_pressure_fault).state ? "OUI" : "NON");
       it.printf(0, 16, id(roboto_14), "Pression: %.2f bar",
         isnan(id(pressure_bar).state) ? 0.0f : id(pressure_bar).state);
-      it.printf(0, 32, id(roboto_14), "WiFi: %.0f dBm",
-        isnan(id(wifi_signal_db).state) ? 0.0f : id(wifi_signal_db).state);
+      it.printf(0, 32, id(roboto_14), "WiFi: %.0f%%",
+        isnan(id(wifi_signal_percent).state) ? 0.0f : id(wifi_signal_percent).state);
       it.printf(0, 48, id(roboto_14), "Temp: %.1f C",
         isnan(id(esp_temperature).state) ? 0.0f : id(esp_temperature).state);
