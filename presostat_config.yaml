@@ -577,10 +577,12 @@ display:
       }
       it.printf(0, 0, id(roboto_24), "%.2f bar",
         isnan(id(pressure_bar).state) ? 0.0f : id(pressure_bar).state);
-      it.printf(0, 25, id(roboto_14), "Pompe: %s",
+      it.printf(0, 26, id(roboto_12), "Pompe: %s",
         id(relay_pump).state ? "ON" : "OFF");
-      it.printf(0, 42, id(roboto_9), "Defaut: %s",
-        id(low_pressure_fault).state ? "OUI" : "NON");
-      it.printf(0, 54, id(roboto_9), "WiFi %.0f%%  %.1f C",
+      it.printf(0, 38, id(roboto_9), "Seuils %.1f-%.1f bar",
+        isnan(id(pressure_hold_min_value).state) ? 0.0f : id(pressure_hold_min_value).state,
+        isnan(id(pressure_hold_max_value).state) ? 0.0f : id(pressure_hold_max_value).state);
+      it.printf(0, 56, id(roboto_9), "D:%s WiFi %.0f%% %.1fC",
+        id(low_pressure_fault).state ? "OUI" : "NON",
         isnan(id(wifi_signal_percent).state) ? 0.0f : id(wifi_signal_percent).state,
         isnan(id(esp_temperature).state) ? 0.0f : id(esp_temperature).state);
