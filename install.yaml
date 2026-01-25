@@ -20,5 +20,5 @@ substitutions:
 packages:
   twinsen68.presostat:
     url: https://github.com/Twinsen68/presostat.git
-    file: esphome/presostat_config.yaml
+    file: presostat_config.yaml
     ref: main

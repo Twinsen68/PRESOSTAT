@@ -10,9 +10,9 @@ Projet ESPHome pour piloter un pressostat basé sur un ESP32-S3. La configuratio
 
 ## Structure du dépôt
 
-- `esphome/presostat.yaml` : fichier principal avec les substitutions et l'inclusion du package.
-- `esphome/presostat_config.yaml` : logique ESPHome (capteurs, relais, OLED, sécurité).
-- `esphome/secrets.yaml.example` : exemple de secrets à copier.
+- `install.yaml` : fichier principal avec les substitutions et l'inclusion du package.
+- `presostat_config.yaml` : logique ESPHome (capteurs, relais, OLED, sécurité).
+- `secrets.yaml.example` : exemple de secrets à copier.
 
 ## Configuration à apporter
 
@@ -21,10 +21,10 @@ Projet ESPHome pour piloter un pressostat basé sur un ESP32-S3. La configuratio
 Copiez le fichier d'exemple et renseignez vos identifiants :
 
 ```bash
-cp esphome/secrets.yaml.example esphome/secrets.yaml
+cp secrets.yaml.example secrets.yaml
 ```
 
-Puis éditez `esphome/secrets.yaml` :
+Puis éditez `secrets.yaml` :
 
 ```yaml
 wifi_ssid: "VOTRE_SSID"
@@ -34,7 +34,7 @@ wifi_ap_password: "MOT_DE_PASSE_AP"
 
 ### 2) Ajuster les substitutions matérielles
 
-Dans `esphome/presostat.yaml`, adaptez si besoin :
+Dans `install.yaml`, adaptez si besoin :
 
 - `board` (ex: `esp32-s3-devkitc-1`).
 - Pins : `pressure_adc_pin`, `relay_pin`, `button_pin`, `i2c_sda_pin`, `i2c_scl_pin`.
