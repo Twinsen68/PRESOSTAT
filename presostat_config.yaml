@@ -163,6 +163,16 @@ button:
           id(calibration_active) = true;
           id(calibration_step) = 1;
   - platform: template
+    name: "Calibration Valider Palier"
+    id: calibration_confirm
+    on_press:
+      - if:
+          condition:
+            lambda: |-
+              return id(calibration_active);
+          then:
+            - script.execute: capture_calibration_point
+  - platform: template
     name: "Calibration Annuler"
     id: calibration_cancel
     on_press:
