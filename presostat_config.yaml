@@ -521,6 +521,9 @@ light:
     num_leds: 1
     type: ${led_rgb_order}
     variant: ${led_chipset}
+    method:
+      type: ${led_method_type}
+      channel: ${led_method_channel}
     restore_mode: ALWAYS_OFF
 
 interval:
