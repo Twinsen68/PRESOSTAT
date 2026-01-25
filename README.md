@@ -114,3 +114,4 @@ esphome logs install.yaml --device /dev/tty.usbserial-XXXX
   - **Défaut persistant** : rouge clignotement rapide.
   - **Calibration active** : bleu respiration.
   - **Valeur capteur invalide** : violet fixe.
+  - **Test LED (Bypass Script)** : blanc fixe tant que l'interrupteur est activé (bypass de la logique).
