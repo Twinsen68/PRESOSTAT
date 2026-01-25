@@ -11,8 +11,6 @@ substitutions:
   led_pin: GPIO48
   led_rgb_order: GRB
   led_chipset: WS2812
-  led_method_type: esp32_rmt
-  led_method_channel: 1
   led_fault_red: "1.0"
   led_fault_green: "0.0"
   led_fault_blue: "0.0"

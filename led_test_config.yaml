@@ -1,0 +1,65 @@
+# Configuration autonome pour tester une LED sans dépendances externes.
+#
+# Utilisation rapide :
+# 1) Ajuste les substitutions (device_name, wifi, led_gpio).
+# 2) Choisis UN seul bloc de LED ci-dessous (binaire ou WS2812).
+# 3) Compile avec ESPHome.
+
+substitutions:
+  device_name: "presostat-led-test"
+  friendly_name: "Presostat LED Test"
+  # GPIO à tester (un seul à la fois pour éviter les pins de strapping).
+  led_gpio: "GPIO48"
+  # Inverse la LED si elle est active LOW.
+  led_inverted: "false"
+
+esphome:
+  name: ${device_name}
+  friendly_name: ${friendly_name}
+
+esp32:
+  board: esp32-s3-devkitc-1
+  variant: esp32s3
+  framework:
+    type: arduino
+
+logger:
+
+api:
+
+ota:
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "${friendly_name} Fallback"
+    password: "presostat-fallback"
+
+captive_portal:
+
+# -----------------------------------------------------------
+# Option A : LED simple (GPIO, active HIGH ou LOW).
+# -----------------------------------------------------------
+# output:
+#   - platform: gpio
+#     pin: ${led_gpio}
+#     inverted: ${led_inverted}
+#     id: led_pin
+
+# light:
+#   - platform: binary
+#     name: "LED test"
+#     output: led_pin
+
+# -----------------------------------------------------------
+# Option B : LED RGB WS2812 (désactive l'option A si utilisée).
+# -----------------------------------------------------------
+light:
+  - platform: esp32_rmt_led_strip
+    name: "RGB onboard"
+    pin: ${led_gpio}
+    num_leds: 1
+    rgb_order: GRB
+    chipset: WS2812
+    restore_mode: ALWAYS_ON
