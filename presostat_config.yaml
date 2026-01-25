@@ -317,6 +317,9 @@ font:
     id: roboto_10
     size: 10
   - file: "gfonts://Roboto"
+    id: roboto_9
+    size: 9
+  - file: "gfonts://Roboto"
     id: roboto_8
     size: 8
   - file: "gfonts://Roboto"
@@ -566,18 +569,18 @@ display:
     lambda: |-
       if (id(calibration_active)) {
         it.printf(0, 0, id(roboto_18), "Calibration");
-        it.printf(0, 18, id(roboto_14), "Palier: %d bar", id(calibration_step));
-        it.printf(0, 34, id(roboto_14), "Tension: %.2f V",
+        it.printf(0, 17, id(roboto_14), "Palier: %d bar", id(calibration_step));
+        it.printf(0, 34, id(roboto_9), "Tension: %.2f V",
           isnan(id(pressure_voltage).state) ? 0.0f : id(pressure_voltage).state);
-        it.printf(0, 50, id(roboto_14), "Appuyer bouton");
+        it.printf(0, 50, id(roboto_9), "Appuyer bouton");
         return;
       }
       it.printf(0, 0, id(roboto_24), "%.2f bar",
         isnan(id(pressure_bar).state) ? 0.0f : id(pressure_bar).state);
-      it.printf(0, 26, id(roboto_14), "Pompe: %s",
+      it.printf(0, 25, id(roboto_14), "Pompe: %s",
         id(relay_pump).state ? "ON" : "OFF");
-      it.printf(0, 40, id(roboto_8), "Defaut: %s",
+      it.printf(0, 40, id(roboto_9), "Defaut: %s",
         id(low_pressure_fault).state ? "OUI" : "NON");
-      it.printf(0, 54, id(roboto_8), "WiFi %.0f%%  %.1f C",
+      it.printf(0, 54, id(roboto_9), "WiFi %.0f%%  %.1f C",
         isnan(id(wifi_signal_percent).state) ? 0.0f : id(wifi_signal_percent).state,
         isnan(id(esp_temperature).state) ? 0.0f : id(esp_temperature).state);
