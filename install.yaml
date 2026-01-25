@@ -37,6 +37,8 @@ substitutions:
   pressure_bar_max: "10.0"
   pressure_hold_min: "3.5"
   pressure_hold_max: "6.0"
+  pressure_hold_min_sensor: "sensor.presostat_hold_min"
+  pressure_hold_max_sensor: "sensor.presostat_hold_max"
   pressure_fault_min: "1.5"
   wifi_ap_password: "presostat-fallback"
 
