@@ -514,13 +514,13 @@ sensor:
               - switch.turn_off: relay_pump
 
 light:
-  - platform: esp32_rmt_led_strip
+  - platform: neopixelbus
     id: status_led
     name: "LED Statut"
     pin: ${led_pin}
     num_leds: 1
-    rgb_order: ${led_rgb_order}
-    chipset: ${led_chipset}
+    type: ${led_rgb_order}
+    variant: ${led_chipset}
     restore_mode: ALWAYS_OFF
 
 interval:

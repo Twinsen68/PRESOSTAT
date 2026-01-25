@@ -128,3 +128,5 @@ Deux méthodes sont disponibles pour définir les seuils d'hystérésis :
   - **Calibration active** : bleu respiration.
   - **Valeur capteur invalide** : violet fixe.
   - **Test LED (Bypass Script)** : blanc fixe tant que l'interrupteur est activé (bypass de la logique).
+
+Note : la configuration LED utilise `neopixelbus` (compatible avec le framework Arduino). Si vous repassez en `esp32_rmt_led_strip`, il faudra basculer sur `esp-idf`. 
