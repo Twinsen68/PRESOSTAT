@@ -44,7 +44,6 @@ Dans `install.yaml`, adaptez si besoin :
 - `board` (ex: `esp32-s3-devkitc-1`).
 - Pins : `pressure_adc_pin`, `relay_pin`, `button_pin`, `i2c_sda_pin`, `i2c_scl_pin`.
 - LED : `led_pin` (LED RGB intégrée, type WS2812 ou équivalent).
-- Méthode LED : `led_method_type` / `led_method_channel` (sélection du driver NeopixelBus, ex: `esp32_rmt` + `1` pour ESP32‑S3 si la LED ne répond pas). Les canaux `esp32_rmt` valides sur ESP32‑S3 sont 0 à 3.
 - Couleur LED :
   - `led_fault_red` / `led_fault_green` / `led_fault_blue` (couleur en défaut).
   - `led_out_red` / `led_out_green` / `led_out_blue` (couleur pression hors consigne).
@@ -53,12 +52,12 @@ Dans `install.yaml`, adaptez si besoin :
   - `led_invalid_red` / `led_invalid_green` / `led_invalid_blue` (couleur quand la valeur du capteur est invalide).
   - `led_off_red` / `led_off_green` / `led_off_blue` (couleur quand la pompe est OFF).
   - `led_rgb_order` (ordre des couleurs, ex: `GRB`).
+  - `led_chipset` (type de LED, ex: `WS2812`).
 
 Sur les modules ESP32‑S3 N16R8 (ex : DevKitC‑1), la LED RGB intégrée est
 généralement une WS2812 câblée sur GPIO48 avec un ordre GRB. Cela aide à éviter
-les confusions sur les boards S3 N16R8. La doc NeoPixelBus détaille les méthodes
-supportées et rappelle que `esp32_i2s` n'est pas disponible sur ESP32‑S3 : https://esphome.io/components/light/neopixelbus.html
-Si la LED reste éteinte, testez `led_method_type: bit_bang` (plus lent mais compatible) pour vérifier qu'il ne s'agit pas d'un souci de méthode RMT.
+les confusions sur les boards S3 N16R8. La doc ESPHome sur les bandes LED RMT
+est ici : https://esphome.io/components/light/esp32_rmt_led_strip.html
 - Wi-Fi : `wifi_ap_password` (mot de passe du point d'accès de secours).
 - Plages de calibration :
   - `pressure_voltage_min` / `pressure_voltage_max`
@@ -132,4 +131,4 @@ Deux méthodes sont disponibles pour définir les seuils d'hystérésis :
   - **Valeur capteur invalide** : violet fixe.
   - **Test LED (Bypass Script)** : blanc fixe tant que l'interrupteur est activé (bypass de la logique).
 
-Note : la configuration LED utilise `neopixelbus` (compatible avec le framework Arduino). Si vous repassez en `esp32_rmt_led_strip`, il faudra basculer sur `esp-idf`. 
+Note : la configuration LED utilise `esp32_rmt_led_strip` (recommandé pour les ESP32‑S3). 
