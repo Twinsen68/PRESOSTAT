@@ -26,6 +26,154 @@ captive_portal:
 web_server:
   port: 80
 
+globals:
+  - id: calibration_step
+    type: int
+    restore_value: false
+    initial_value: "0"
+  - id: calibration_active
+    type: bool
+    restore_value: false
+    initial_value: "false"
+
+script:
+  - id: capture_calibration_point
+    mode: queued
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(calibration_active);
+          then:
+            - if:
+                condition:
+                  lambda: |-
+                    return !isnan(id(pressure_voltage).state);
+                then:
+                  - lambda: |-
+                      float voltage = id(pressure_voltage).state;
+                      if (id(calibration_step) == 1) {
+                        id(cal_number_1_bar).publish_state(voltage);
+                      } else if (id(calibration_step) == 2) {
+                        id(cal_number_2_bar).publish_state(voltage);
+                      } else if (id(calibration_step) == 3) {
+                        id(cal_number_3_bar).publish_state(voltage);
+                      } else if (id(calibration_step) == 4) {
+                        id(cal_number_4_bar).publish_state(voltage);
+                      } else if (id(calibration_step) == 5) {
+                        id(cal_number_5_bar).publish_state(voltage);
+                      } else if (id(calibration_step) == 6) {
+                        id(cal_number_6_bar).publish_state(voltage);
+                      }
+            - lambda: |-
+                if (id(calibration_step) >= 6) {
+                  id(calibration_step) = 0;
+                  id(calibration_active) = false;
+                } else {
+                  id(calibration_step) += 1;
+                }
+
+button:
+  - platform: template
+    name: "Calibration Demarrer"
+    id: calibration_start
+    on_press:
+      - lambda: |-
+          id(calibration_active) = true;
+          id(calibration_step) = 1;
+  - platform: template
+    name: "Calibration Annuler"
+    id: calibration_cancel
+    on_press:
+      - lambda: |-
+          id(calibration_active) = false;
+          id(calibration_step) = 0;
+
+text_sensor:
+  - platform: template
+    name: "Calibration Etat"
+    id: calibration_status
+    update_interval: 1s
+    lambda: |-
+      if (!id(calibration_active)) {
+        return {"Inactive"};
+      }
+      if (id(calibration_step) == 1) {
+        return {"Regler a 1 bar puis appuyer bouton"};
+      }
+      if (id(calibration_step) == 2) {
+        return {"Regler a 2 bar puis appuyer bouton"};
+      }
+      if (id(calibration_step) == 3) {
+        return {"Regler a 3 bar puis appuyer bouton"};
+      }
+      if (id(calibration_step) == 4) {
+        return {"Regler a 4 bar puis appuyer bouton"};
+      }
+      if (id(calibration_step) == 5) {
+        return {"Regler a 5 bar puis appuyer bouton"};
+      }
+      if (id(calibration_step) == 6) {
+        return {"Regler a 6 bar puis appuyer bouton"};
+      }
+      return {"Termine"};
+
+number:
+  - platform: template
+    name: "Calibration 1 bar (V)"
+    id: cal_number_1_bar
+    min_value: 0.0
+    max_value: 5.0
+    step: 0.01
+    optimistic: true
+    restore_value: true
+    initial_value: 0.0
+  - platform: template
+    name: "Calibration 2 bar (V)"
+    id: cal_number_2_bar
+    min_value: 0.0
+    max_value: 5.0
+    step: 0.01
+    optimistic: true
+    restore_value: true
+    initial_value: 0.0
+  - platform: template
+    name: "Calibration 3 bar (V)"
+    id: cal_number_3_bar
+    min_value: 0.0
+    max_value: 5.0
+    step: 0.01
+    optimistic: true
+    restore_value: true
+    initial_value: 0.0
+  - platform: template
+    name: "Calibration 4 bar (V)"
+    id: cal_number_4_bar
+    min_value: 0.0
+    max_value: 5.0
+    step: 0.01
+    optimistic: true
+    restore_value: true
+    initial_value: 0.0
+  - platform: template
+    name: "Calibration 5 bar (V)"
+    id: cal_number_5_bar
+    min_value: 0.0
+    max_value: 5.0
+    step: 0.01
+    optimistic: true
+    restore_value: true
+    initial_value: 0.0
+  - platform: template
+    name: "Calibration 6 bar (V)"
+    id: cal_number_6_bar
+    min_value: 0.0
+    max_value: 5.0
+    step: 0.01
+    optimistic: true
+    restore_value: true
+    initial_value: 0.0
+
 i2c:
   sda: ${i2c_sda_pin}
   scl: ${i2c_scl_pin}
@@ -62,7 +210,14 @@ binary_sensor:
       - delayed_on: 50ms
       - delayed_off: 50ms
     on_press:
-      - switch.toggle: relay_pump
+      - if:
+          condition:
+            lambda: |-
+              return id(calibration_active);
+          then:
+            - script.execute: capture_calibration_point
+          else:
+            - switch.toggle: relay_pump
 
   - platform: template
     id: low_pressure_fault
@@ -83,7 +238,7 @@ sensor:
     id: pressure_voltage
     pin: ${pressure_adc_pin}
     name: "Tension Capteur Pression"
-    attenuation: 11db
+    attenuation: 12db
     update_interval: 1s
     unit_of_measurement: "V"
     accuracy_decimals: 2
@@ -103,14 +258,55 @@ sensor:
         return NAN;
       }
       float voltage = id(pressure_voltage).state;
-      float pressure = (voltage - v_min) * (p_max - p_min) / (v_max - v_min) + p_min;
-      if (pressure < p_min) {
-        pressure = p_min;
+      const float v1 = id(cal_number_1_bar).state;
+      const float v2 = id(cal_number_2_bar).state;
+      const float v3 = id(cal_number_3_bar).state;
+      const float v4 = id(cal_number_4_bar).state;
+      const float v5 = id(cal_number_5_bar).state;
+      const float v6 = id(cal_number_6_bar).state;
+      const bool calibrated = (v1 > 0.0f && v2 > v1 && v3 > v2 && v4 > v3 && v5 > v4 && v6 > v5);
+
+      auto clamp_pressure = [&](float pressure) -> float {
+        if (pressure < p_min) {
+          return p_min;
+        }
+        if (pressure > p_max) {
+          return p_max;
+        }
+        return pressure;
+      };
+
+      if (!calibrated) {
+        float pressure = (voltage - v_min) * (p_max - p_min) / (v_max - v_min) + p_min;
+        return clamp_pressure(pressure);
       }
-      if (pressure > p_max) {
-        pressure = p_max;
+
+      auto interp = [&](float v_low, float v_high, float p_low, float p_high) -> float {
+        if (v_high <= v_low) {
+          return p_low;
+        }
+        return (voltage - v_low) * (p_high - p_low) / (v_high - v_low) + p_low;
+      };
+
+      if (voltage <= v1) {
+        return clamp_pressure(interp(v_min, v1, p_min, 1.0f));
       }
-      return pressure;
+      if (voltage <= v2) {
+        return clamp_pressure(interp(v1, v2, 1.0f, 2.0f));
+      }
+      if (voltage <= v3) {
+        return clamp_pressure(interp(v2, v3, 2.0f, 3.0f));
+      }
+      if (voltage <= v4) {
+        return clamp_pressure(interp(v3, v4, 3.0f, 4.0f));
+      }
+      if (voltage <= v5) {
+        return clamp_pressure(interp(v4, v5, 4.0f, 5.0f));
+      }
+      if (voltage <= v6) {
+        return clamp_pressure(interp(v5, v6, 5.0f, 6.0f));
+      }
+      return clamp_pressure(interp(v6, v_max, 6.0f, p_max));
     on_value:
       then:
         - if:

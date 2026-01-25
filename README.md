@@ -7,6 +7,7 @@ Projet ESPHome pour piloter un pressostat basé sur un ESP32-S3. La configuratio
 - Un bouton physique pour forcer la pompe.
 - Un écran OLED SSD1306 pour afficher l'état.
 - Une sécurité de pression basse persistante.
+- Une calibration multi-points du capteur (1 à 6 bar) via l'interface web et le bouton physique.
 
 ## Structure du dépôt
 
@@ -60,11 +61,32 @@ Le calcul de pression est linéaire entre `pressure_voltage_min` et
 Adaptez ces valeurs aux caractéristiques de votre capteur pour obtenir une
 mesure fiable.
 
+### 4) Calibration multi-points (1 → 6 bar)
+
+Deux méthodes sont disponibles pour calibrer la pression :
+
+1. **Via l'interface web (ou Home Assistant)** :
+   - Renseignez les entités `Calibration X bar (V)` avec la tension lue par le capteur.
+   - La conversion en bar devient alors une interpolation linéaire entre les points saisis.
+2. **Via le bouton physique** :
+   - Appuyez sur l'entité `Calibration Demarrer`.
+   - Le texte `Calibration Etat` vous indique le palier à atteindre.
+   - Montez la pression au palier (1 bar, 2 bar, …, 6 bar) puis appuyez sur le **bouton physique** pour enregistrer chaque point.
+   - L'étape suivante s'affiche automatiquement jusqu'à la fin (6 bar).
+
+Si aucune calibration n'est renseignée, la conversion reste basée sur
+`pressure_voltage_min` / `pressure_voltage_max`.
+
 ## Utilisation
 
 1. Installez ESPHome (CLI ou via Home Assistant).
 2. Lancez la compilation et le flash du firmware avec ESPHome.
 3. Surveillez les entités créées (pression, relais, défaut) via l'API ESPHome.
+4. Pour suivre les valeurs en temps réel dans le terminal :
+
+```bash
+esphome logs install.yaml --device /dev/tty.usbserial-XXXX
+```
 
 ## Remarques
 
