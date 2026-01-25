@@ -75,6 +75,84 @@ script:
                 } else {
                   id(calibration_step) += 1;
                 }
+  - id: update_status_led
+    mode: restart
+    then:
+      - script.execute: render_status_led
+  - id: render_status_led
+    mode: restart
+    then:
+      - lambda: |-
+          const float two_pi = 6.283185307f;
+          const uint32_t now = millis();
+          auto clamp01 = [](float value) -> float {
+            if (value < 0.0f) {
+              return 0.0f;
+            }
+            if (value > 1.0f) {
+              return 1.0f;
+            }
+            return value;
+          };
+
+          float red = 0.0f;
+          float green = 0.0f;
+          float blue = 0.0f;
+
+          const float pressure = id(pressure_bar).state;
+          const bool pressure_valid = !isnan(pressure);
+          const float p_min = ${pressure_hold_min};
+          const float p_max = ${pressure_hold_max};
+
+          if (id(calibration_active)) {
+            const float phase = (now % 2000) / 2000.0f;
+            const float breath = 0.5f - 0.5f * cosf(two_pi * phase);
+            const float scale = 0.2f + 0.8f * breath;
+            red = ${led_calibration_red} * scale;
+            green = ${led_calibration_green} * scale;
+            blue = ${led_calibration_blue} * scale;
+          } else if (!pressure_valid) {
+            red = ${led_invalid_red};
+            green = ${led_invalid_green};
+            blue = ${led_invalid_blue};
+          } else if (id(low_pressure_fault).state) {
+            const bool on = ((now / 200) % 2) == 0;
+            if (on) {
+              red = ${led_fault_red};
+              green = ${led_fault_green};
+              blue = ${led_fault_blue};
+            }
+          } else if (pressure < p_min || pressure >= p_max) {
+            bool on = false;
+            if (pressure < p_min) {
+              on = ((now / 1000) % 2) == 0;
+            } else {
+              const uint32_t phase_ms = now % 1000;
+              on = (phase_ms < 120) || (phase_ms >= 240 && phase_ms < 360);
+            }
+            if (on) {
+              red = ${led_out_red};
+              green = ${led_out_green};
+              blue = ${led_out_blue};
+            }
+          } else {
+            float ratio = (pressure - p_min) / (p_max - p_min);
+            ratio = clamp01(ratio);
+            const float gamma = 2.0f;
+            float intensity = ${led_in_green_min}
+              + ( ${led_in_green_max} - ${led_in_green_min}) * powf(ratio, gamma);
+            if (id(relay_pump).state) {
+              const float phase = (now % 2000) / 2000.0f;
+              const float pulse = sinf(two_pi * phase);
+              const float amplitude = 0.15f * (${led_in_green_max} - ${led_in_green_min});
+              intensity += amplitude * pulse;
+            }
+            green = clamp01(intensity);
+          }
+
+          auto call = id(status_led).turn_on();
+          call.set_rgb(clamp01(red), clamp01(green), clamp01(blue));
+          call.perform();
 
 button:
   - platform: template
@@ -341,66 +419,10 @@ light:
     rmt_channel: 0
     restore_mode: ALWAYS_OFF
 
-script:
-  - id: update_status_led
-    mode: restart
+interval:
+  - interval: 200ms
     then:
-      - if:
-          condition:
-            binary_sensor.is_on: low_pressure_fault
-          then:
-            - light.turn_on:
-                id: status_led
-                red: ${led_fault_red}
-                green: ${led_fault_green}
-                blue: ${led_fault_blue}
-          else:
-            - if:
-                condition:
-                  switch.is_on: relay_pump
-                then:
-                  - if:
-                      condition:
-                        lambda: |-
-                          return isnan(id(pressure_bar).state);
-                      then:
-                        - light.turn_on:
-                            id: status_led
-                            red: ${led_calibration_red}
-                            green: ${led_calibration_green}
-                            blue: ${led_calibration_blue}
-                      else:
-                        - if:
-                            condition:
-                              lambda: |-
-                                return id(pressure_bar).state < ${pressure_hold_min}
-                                  || id(pressure_bar).state >= ${pressure_hold_max};
-                            then:
-                              - light.turn_on:
-                                  id: status_led
-                                  red: ${led_out_red}
-                                  green: ${led_out_green}
-                                  blue: ${led_out_blue}
-                            else:
-                              - light.turn_on:
-                                  id: status_led
-                                  red: 0.0
-                                  green: !lambda |-
-                                    float p = id(pressure_bar).state;
-                                    float min_p = ${pressure_hold_min};
-                                    float max_p = ${pressure_hold_max};
-                                    float ratio = (p - min_p) / (max_p - min_p);
-                                    if (ratio < 0.0f) ratio = 0.0f;
-                                    if (ratio > 1.0f) ratio = 1.0f;
-                                    return ${led_in_green_min}
-                                      + ratio * (${led_in_green_max} - ${led_in_green_min});
-                                  blue: 0.0
-                else:
-                  - light.turn_on:
-                      id: status_led
-                      red: ${led_off_red}
-                      green: ${led_off_green}
-                      blue: ${led_off_blue}
+      - script.execute: render_status_led
 
 display:
   - platform: ssd1306_i2c
