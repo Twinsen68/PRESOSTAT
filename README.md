@@ -32,12 +32,17 @@ wifi_password: "VOTRE_MOT_DE_PASSE"
 wifi_ap_password: "MOT_DE_PASSE_AP"
 ```
 
+Le mot de passe du point d'accès de secours peut aussi être défini directement
+via la substitution `wifi_ap_password` dans `install.yaml` si vous préférez ne
+pas le mettre dans les secrets.
+
 ### 2) Ajuster les substitutions matérielles
 
 Dans `install.yaml`, adaptez si besoin :
 
 - `board` (ex: `esp32-s3-devkitc-1`).
 - Pins : `pressure_adc_pin`, `relay_pin`, `button_pin`, `i2c_sda_pin`, `i2c_scl_pin`.
+- Wi-Fi : `wifi_ap_password` (mot de passe du point d'accès de secours).
 - Plages de calibration :
   - `pressure_voltage_min` / `pressure_voltage_max`
   - `pressure_bar_min` / `pressure_bar_max`
