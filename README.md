@@ -48,7 +48,8 @@ Dans `install.yaml`, adaptez si besoin :
   - `led_fault_red` / `led_fault_green` / `led_fault_blue` (couleur en défaut).
   - `led_out_red` / `led_out_green` / `led_out_blue` (couleur pression hors consigne).
   - `led_in_green_min` / `led_in_green_max` (intensité verte en consigne, valeurs 0.0 à 1.0).
-  - `led_calibration_red` / `led_calibration_green` / `led_calibration_blue` (couleur pendant la calibration/valeur invalide).
+  - `led_calibration_red` / `led_calibration_green` / `led_calibration_blue` (couleur pendant la calibration).
+  - `led_invalid_red` / `led_invalid_green` / `led_invalid_blue` (couleur quand la valeur du capteur est invalide).
   - `led_off_red` / `led_off_green` / `led_off_blue` (couleur quand la pompe est OFF).
   - `led_rgb_order` (ordre des couleurs, ex: `GRB`).
 - Wi-Fi : `wifi_ap_password` (mot de passe du point d'accès de secours).
@@ -101,4 +102,11 @@ esphome logs install.yaml --device /dev/tty.usbserial-XXXX
 - Le relais est configuré avec `restore_mode: RESTORE_DEFAULT_OFF`.
 - Le défaut de pression basse coupe la pompe automatiquement.
 - L'écran OLED affiche l'état de la pompe, la pression et le défaut.
-- La LED intégrée est configurable en RGB : rouge hors consigne, dégradé vert en consigne, bleu pendant la calibration, et couleur de défaut dédiée.
+- La LED intégrée suit ces comportements :
+  - **État normal** : vert fixe, intensité proportionnelle à la pression (faible proche de `pressure_hold_min`, fort proche de `pressure_hold_max`).
+  - **Pompe ON** : vert pulsé lent, modulé autour de l'intensité cible.
+  - **Sous pression (< `pressure_hold_min`)** : rouge clignotement lent (flash simple).
+  - **Sur pression (>= `pressure_hold_max`)** : rouge double flash lent (flash‑flash‑pause).
+  - **Défaut persistant** : rouge clignotement rapide.
+  - **Calibration active** : bleu respiration.
+  - **Valeur capteur invalide** : violet fixe.
