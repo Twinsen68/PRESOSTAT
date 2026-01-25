@@ -38,6 +38,10 @@ globals:
     type: bool
     restore_value: false
     initial_value: "false"
+  - id: led_test_mode
+    type: bool
+    restore_value: true
+    initial_value: "false"
 
 script:
   - id: capture_calibration_point
@@ -104,7 +108,11 @@ script:
           const float p_min = ${pressure_hold_min};
           const float p_max = ${pressure_hold_max};
 
-          if (id(calibration_active)) {
+          if (id(led_test_mode)) {
+            red = ${led_test_red};
+            green = ${led_test_green};
+            blue = ${led_test_blue};
+          } else if (id(calibration_active)) {
             const float phase = (now % 2000) / 2000.0f;
             const float breath = 0.5f - 0.5f * cosf(two_pi * phase);
             const float scale = 0.2f + 0.8f * breath;
@@ -162,6 +170,8 @@ button:
       - lambda: |-
           id(calibration_active) = true;
           id(calibration_step) = 1;
+          id(led_test_mode) = false;
+      - script.execute: update_status_led
   - platform: template
     name: "Calibration Valider Palier"
     id: calibration_confirm
@@ -179,6 +189,7 @@ button:
       - lambda: |-
           id(calibration_active) = false;
           id(calibration_step) = 0;
+      - script.execute: update_status_led
 
 text_sensor:
   - platform: template
@@ -289,6 +300,21 @@ switch:
     on_turn_on:
       - script.execute: update_status_led
     on_turn_off:
+      - script.execute: update_status_led
+  - platform: template
+    id: led_test_switch
+    name: "Test LED (Bypass Script)"
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+    turn_on_action:
+      - lambda: |-
+          id(led_test_mode) = true;
+          id(calibration_active) = false;
+          id(calibration_step) = 0;
+      - script.execute: update_status_led
+    turn_off_action:
+      - lambda: |-
+          id(led_test_mode) = false;
       - script.execute: update_status_led
 
 binary_sensor:
