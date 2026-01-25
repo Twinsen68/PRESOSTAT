@@ -330,6 +330,20 @@ binary_sensor:
       - script.execute: update_status_led
 
 sensor:
+  - platform: wifi_signal
+    id: wifi_signal_db
+    name: "WiFi Signal"
+    update_interval: 30s
+    unit_of_measurement: "dBm"
+    accuracy_decimals: 0
+
+  - platform: internal_temperature
+    id: esp_temperature
+    name: "Temperature ESP"
+    update_interval: 30s
+    unit_of_measurement: "°C"
+    accuracy_decimals: 1
+
   - platform: adc
     id: pressure_voltage
     pin: ${pressure_adc_pin}
@@ -439,9 +453,12 @@ display:
     model: "SSD1306 128x64"
     address: 0x3C
     lambda: |-
-      it.printf(0, 0, id(roboto_18), "Pompe: %s",
-        id(relay_pump).state ? "ON" : "OFF");
-      it.printf(0, 26, id(roboto_14), "Pression: %.2f bar",
-        isnan(id(pressure_bar).state) ? 0.0f : id(pressure_bar).state);
-      it.printf(0, 46, id(roboto_14), "Defaut: %s",
+      it.printf(0, 0, id(roboto_14), "Pompe:%s Def:%s",
+        id(relay_pump).state ? "ON" : "OFF",
         id(low_pressure_fault).state ? "OUI" : "NON");
+      it.printf(0, 16, id(roboto_14), "Pression: %.2f bar",
+        isnan(id(pressure_bar).state) ? 0.0f : id(pressure_bar).state);
+      it.printf(0, 32, id(roboto_14), "WiFi: %.0f dBm",
+        isnan(id(wifi_signal_db).state) ? 0.0f : id(wifi_signal_db).state);
+      it.printf(0, 48, id(roboto_14), "Temp: %.1f C",
+        isnan(id(esp_temperature).state) ? 0.0f : id(esp_temperature).state);
