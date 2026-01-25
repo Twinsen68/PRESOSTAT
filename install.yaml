@@ -10,6 +10,7 @@ substitutions:
   i2c_scl_pin: GPIO9
   led_pin: GPIO21
   led_rgb_order: GRB
+  led_chipset: ws2812
   led_fault_red: "1.0"
   led_fault_green: "0.0"
   led_fault_blue: "0.0"
