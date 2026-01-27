@@ -2,7 +2,11 @@ substitutions:
   device_name: presostat
   friendly_name: "Presostat"
   board: esp32-s3-devkitc-1
-  pressure_adc_pin: GPIO1
+  ads1115_address: "0x48"
+  ads1115_gain: "6.144"
+  ads1115_channel: A0_GND
+  ads_i2c_sda_pin: GPIO4
+  ads_i2c_scl_pin: GPIO5
   relay_pin: GPIO6
   relay_inverted: "true"
   button_pin: GPIO7

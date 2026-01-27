@@ -42,7 +42,9 @@ pas le mettre dans les secrets.
 Dans `install.yaml`, adaptez si besoin :
 
 - `board` (ex: `esp32-s3-devkitc-1`).
-- Pins : `pressure_adc_pin`, `relay_pin`, `button_pin`, `i2c_sda_pin`, `i2c_scl_pin`.
+- Pins : `relay_pin`, `button_pin`, `i2c_sda_pin`, `i2c_scl_pin`.
+- ADS1115 : `ads1115_address`, `ads1115_gain`, `ads1115_channel` (entrée utilisée pour le capteur).
+- Bus I²C séparé ADS1115 : `ads_i2c_sda_pin`, `ads_i2c_scl_pin` (pins dédiées à l'ADS).
 - LED : `led_pin` (LED RGB intégrée, type WS2812 ou équivalent).
 - Couleur LED :
   - `led_fault_red` / `led_fault_green` / `led_fault_blue` (couleur en défaut).
