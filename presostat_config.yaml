@@ -299,9 +299,19 @@ number:
     initial_value: 0.0
 
 i2c:
-  sda: ${i2c_sda_pin}
-  scl: ${i2c_scl_pin}
-  scan: true
+  - id: i2c_display
+    sda: ${i2c_sda_pin}
+    scl: ${i2c_scl_pin}
+    scan: true
+  - id: i2c_ads
+    sda: ${ads_i2c_sda_pin}
+    scl: ${ads_i2c_scl_pin}
+    scan: true
+
+ads1115:
+  - id: ads1115_hub
+    i2c_id: i2c_ads
+    address: ${ads1115_address}
 
 font:
   - file: "gfonts://Roboto"
@@ -458,11 +468,12 @@ sensor:
     unit_of_measurement: "°C"
     accuracy_decimals: 1
 
-  - platform: adc
+  - platform: ads1115
     id: pressure_voltage
-    pin: ${pressure_adc_pin}
+    ads1115_id: ads1115_hub
+    multiplexer: ${ads1115_channel}
+    gain: ${ads1115_gain}
     name: "Tension Capteur Pression"
-    attenuation: 12db
     update_interval: 1s
     unit_of_measurement: "V"
     accuracy_decimals: 2
@@ -564,6 +575,7 @@ interval:
 
 display:
   - platform: ssd1306_i2c
+    i2c_id: i2c_display
     model: "SSD1306 128x64"
     address: 0x3C
     lambda: |-
