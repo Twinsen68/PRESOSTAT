@@ -122,6 +122,7 @@ Deux méthodes sont disponibles pour définir les seuils d'hystérésis :
 
 - Le relais est configuré avec `restore_mode: RESTORE_DEFAULT_OFF`.
 - Le défaut de pression basse coupe la pompe automatiquement.
+- En cas de défaut de pression basse persistant, une relance automatique de 5 minutes est tentée toutes les heures pour voir si la pression revient en plage normale.
 - L'écran OLED affiche l'état de la pompe, la pression et le défaut.
 - La LED intégrée suit ces comportements :
   - **État normal** : vert fixe, intensité proportionnelle à la pression (faible proche de `pressure_hold_min`, fort proche de `pressure_hold_max`).

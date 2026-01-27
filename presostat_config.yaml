@@ -44,6 +44,22 @@ globals:
     initial_value: "false"
 
 script:
+  - id: retry_low_pressure
+    mode: restart
+    then:
+      - if:
+          condition:
+            lambda: |-
+              return id(low_pressure_fault).state && !id(relay_pump).state;
+          then:
+            - switch.turn_on: relay_pump
+            - delay: 5min
+            - if:
+                condition:
+                  lambda: |-
+                    return id(low_pressure_fault).state;
+                then:
+                  - switch.turn_off: relay_pump
   - id: capture_calibration_point
     mode: queued
     then:
@@ -548,7 +564,7 @@ sensor:
         - if:
             condition:
               lambda: |-
-                return !isnan(x) && x < id(pressure_hold_min_value).state;
+                return !isnan(x) && x < id(pressure_hold_min_value).state && !id(low_pressure_fault).state;
             then:
               - switch.turn_on: relay_pump
         - if:
@@ -572,6 +588,9 @@ interval:
   - interval: 200ms
     then:
       - script.execute: render_status_led
+  - interval: 1h
+    then:
+      - script.execute: retry_low_pressure
 
 display:
   - platform: ssd1306_i2c
