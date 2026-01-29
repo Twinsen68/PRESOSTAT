@@ -40,7 +40,7 @@ globals:
     initial_value: "false"
   - id: led_test_mode
     type: bool
-    restore_value: true
+    restore_value: false
     initial_value: "false"
 
 script:
