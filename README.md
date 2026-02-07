@@ -46,6 +46,10 @@ Dans `install.yaml`, adaptez si besoin :
 - ADS1115 : `ads1115_address`, `ads1115_gain`, `ads1115_channel` (entrée utilisée pour le capteur).
 - Bus I²C séparé ADS1115 : `ads_i2c_sda_pin`, `ads_i2c_scl_pin` (pins dédiées à l'ADS).
 - LED : `led_pin` (LED RGB intégrée, type WS2812 ou équivalent).
+- Écran OLED :
+  - `display_sleep_timeout_s` (délai d’inactivité avant veille de l’écran, en secondes).
+  - `display_burnin_shift_period_s` (fréquence du micro-décalage anti-marquage).
+  - `display_burnin_shift_px` (amplitude du décalage en pixels).
 - Couleur LED :
   - `led_fault_red` / `led_fault_green` / `led_fault_blue` (couleur en défaut).
   - `led_out_red` / `led_out_green` / `led_out_blue` (couleur pression hors consigne).
@@ -124,6 +128,8 @@ Deux méthodes sont disponibles pour définir les seuils d'hystérésis :
 - Le défaut de pression basse coupe la pompe automatiquement.
 - En cas de défaut de pression basse persistant, une relance automatique de 5 minutes est tentée toutes les heures pour voir si la pression revient en plage normale.
 - L'écran OLED affiche l'état de la pompe, la pression et le défaut.
+- L'écran passe automatiquement en veille après `display_sleep_timeout_s` secondes d'inactivité, puis se rallume dès qu'il y a une action ou un événement critique (pompe ON, défaut, calibration).
+- Un décalage automatique léger de l'affichage (burn-in shift) est appliqué toutes les `display_burnin_shift_period_s` secondes pour limiter le marquage.
 - La LED intégrée suit ces comportements :
   - **État normal** : vert fixe, intensité proportionnelle à la pression (faible proche de `pressure_hold_min`, fort proche de `pressure_hold_max`).
   - **Pompe ON** : vert pulsé lent, modulé autour de l'intensité cible.

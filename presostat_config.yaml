@@ -4,6 +4,7 @@ esphome:
   friendly_name: ${friendly_name}
   on_boot:
     then:
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
 
 esp32:
@@ -42,6 +43,14 @@ globals:
     type: bool
     restore_value: true
     initial_value: "false"
+  - id: display_last_activity_ms
+    type: uint32_t
+    restore_value: false
+    initial_value: "0"
+  - id: display_awake
+    type: bool
+    restore_value: false
+    initial_value: "true"
 
 script:
   - id: retry_low_pressure
@@ -95,6 +104,12 @@ script:
                 } else {
                   id(calibration_step) += 1;
                 }
+  - id: mark_display_activity
+    mode: restart
+    then:
+      - lambda: |-
+          id(display_last_activity_ms) = millis();
+          id(display_awake) = true;
   - id: update_status_led
     mode: restart
     then:
@@ -187,11 +202,13 @@ button:
           id(calibration_active) = true;
           id(calibration_step) = 1;
           id(led_test_mode) = false;
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
   - platform: template
     name: "Calibration Valider Palier"
     id: calibration_confirm
     on_press:
+      - script.execute: mark_display_activity
       - if:
           condition:
             lambda: |-
@@ -205,6 +222,7 @@ button:
       - lambda: |-
           id(calibration_active) = false;
           id(calibration_step) = 0;
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
 
 text_sensor:
@@ -247,6 +265,7 @@ number:
     restore_value: true
     initial_value: ${pressure_hold_min}
     on_value:
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
   - platform: template
     name: "Seuil Pression Max"
@@ -258,6 +277,7 @@ number:
     restore_value: true
     initial_value: ${pressure_hold_max}
     on_value:
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
   - platform: template
     name: "Calibration 1 bar (V)"
@@ -361,8 +381,10 @@ switch:
       inverted: ${relay_inverted}
     restore_mode: RESTORE_DEFAULT_OFF
     on_turn_on:
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
     on_turn_off:
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
   - platform: template
     id: led_test_switch
@@ -374,10 +396,12 @@ switch:
           id(led_test_mode) = true;
           id(calibration_active) = false;
           id(calibration_step) = 0;
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
     turn_off_action:
       - lambda: |-
           id(led_test_mode) = false;
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
 
 binary_sensor:
@@ -394,6 +418,7 @@ binary_sensor:
       - delayed_on: 50ms
       - delayed_off: 50ms
     on_press:
+      - script.execute: mark_display_activity
       - if:
           condition:
             lambda: |-
@@ -416,6 +441,7 @@ binary_sensor:
       - delayed_on: 5min
     on_press:
       - switch.turn_off: relay_pump
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
 
 sensor:
@@ -424,12 +450,14 @@ sensor:
     entity_id: ${pressure_hold_min_sensor}
     internal: true
     on_value:
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
   - platform: homeassistant
     id: hold_max_sensor
     entity_id: ${pressure_hold_max_sensor}
     internal: true
     on_value:
+      - script.execute: mark_display_activity
       - script.execute: update_status_led
 
   - platform: template
@@ -560,6 +588,7 @@ sensor:
       return clamp_pressure(interp(v6, v_max, 6.0f, p_max));
     on_value:
       then:
+        - script.execute: mark_display_activity
         - script.execute: update_status_led
         - if:
             condition:
@@ -588,6 +617,19 @@ interval:
   - interval: 200ms
     then:
       - script.execute: render_status_led
+  - interval: 1s
+    then:
+      - lambda: |-
+          const bool force_awake = id(calibration_active)
+            || id(relay_pump).state
+            || id(low_pressure_fault).state;
+          if (force_awake) {
+            id(display_awake) = true;
+            id(display_last_activity_ms) = millis();
+            return;
+          }
+          const uint32_t elapsed = millis() - id(display_last_activity_ms);
+          id(display_awake) = elapsed < (uint32_t)(${display_sleep_timeout_s} * 1000);
   - interval: 1h
     then:
       - script.execute: retry_low_pressure
@@ -598,22 +640,38 @@ display:
     model: "SSD1306 128x64"
     address: 0x3C
     lambda: |-
-      if (id(calibration_active)) {
-        it.printf(0, 0, id(roboto_18), "Calibration");
-        it.printf(0, 17, id(roboto_14), "Palier: %d bar", id(calibration_step));
-        it.printf(0, 34, id(roboto_9), "Tension: %.2f V",
-          isnan(id(pressure_voltage).state) ? 0.0f : id(pressure_voltage).state);
-        it.printf(0, 50, id(roboto_9), "Appuyer bouton");
+      if (!id(display_awake)) {
         return;
       }
-      it.printf(0, 0, id(roboto_24), "%.2f bar",
+
+      const uint32_t step = (millis() / (${display_burnin_shift_period_s} * 1000UL)) % 4;
+      int dx = 0;
+      int dy = 0;
+      if (step == 1) {
+        dx = ${display_burnin_shift_px};
+      } else if (step == 2) {
+        dy = ${display_burnin_shift_px};
+      } else if (step == 3) {
+        dx = ${display_burnin_shift_px};
+        dy = ${display_burnin_shift_px};
+      }
+
+      if (id(calibration_active)) {
+        it.printf(dx + 0, dy + 0, id(roboto_18), "Calibration");
+        it.printf(dx + 0, dy + 17, id(roboto_14), "Palier: %d bar", id(calibration_step));
+        it.printf(dx + 0, dy + 34, id(roboto_9), "Tension: %.2f V",
+          isnan(id(pressure_voltage).state) ? 0.0f : id(pressure_voltage).state);
+        it.printf(dx + 0, dy + 50, id(roboto_9), "Appuyer bouton");
+        return;
+      }
+      it.printf(dx + 0, dy + 0, id(roboto_24), "%.2f bar",
         isnan(id(pressure_bar).state) ? 0.0f : id(pressure_bar).state);
-      it.printf(0, 25, id(roboto_12), "Pompe: %s",
+      it.printf(dx + 0, dy + 25, id(roboto_12), "Pompe: %s",
         id(relay_pump).state ? "ON" : "OFF");
-      it.printf(0, 38, id(roboto_12), "Seuils %.1f-%.1f bar",
+      it.printf(dx + 0, dy + 38, id(roboto_12), "Seuils %.1f-%.1f bar",
         isnan(id(pressure_hold_min_value).state) ? 0.0f : id(pressure_hold_min_value).state,
         isnan(id(pressure_hold_max_value).state) ? 0.0f : id(pressure_hold_max_value).state);
-      it.printf(0, 54, id(roboto_10), "Defaut:%s - WiFi %.0f%% %.1fC",
+      it.printf(dx + 0, dy + 54, id(roboto_10), "Defaut:%s - WiFi %.0f%% %.1fC",
         id(low_pressure_fault).state ? "OUI" : "NON",
         isnan(id(wifi_signal_percent).state) ? 0.0f : id(wifi_signal_percent).state,
         isnan(id(esp_temperature).state) ? 0.0f : id(esp_temperature).state);
