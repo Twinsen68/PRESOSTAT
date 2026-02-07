@@ -106,6 +106,12 @@ Si aucune calibration n'est renseignée, la conversion reste basée sur
 esphome logs install.yaml --device /dev/tty.usbserial-XXXX
 ```
 
+### Commande manuelle de la pompe (bouton visuel)
+
+Le serveur web ESPHome (`web_server`) expose l'entité switch `Relais Pompe`.
+Depuis l'interface web, vous pouvez donc utiliser ce switch comme **bouton visuel**
+pour forcer/toggler la pompe manuellement.
+
 ## Ajuster la plage min/max via number ou sensor
 
 Deux méthodes sont disponibles pour définir les seuils d'hystérésis :
