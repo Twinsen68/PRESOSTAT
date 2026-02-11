@@ -41,7 +41,7 @@ globals:
     initial_value: "false"
   - id: led_test_mode
     type: bool
-    restore_value: true
+    restore_value: false
     initial_value: "false"
   - id: display_last_activity_ms
     type: uint32_t
